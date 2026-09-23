@@ -185,3 +185,7 @@ function y() {
 
   rm -f -- "$tmp"
 }
+
+# --- Default terminal editor ----------------------------------------------
+export EDITOR="micro"
+export VISUAL="micro"
