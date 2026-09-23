@@ -293,8 +293,13 @@ cp \
   "$DOTFILES/scripts/cmux-wt-clean" \
   "$BIN_DIR/cmux-wt-clean"
 
+cp \
+  "$DOTFILES/scripts/cmux-health" \
+  "$BIN_DIR/cmux-health"
+
 chmod 755 "$BIN_DIR/cmux-init"
 chmod 755 "$BIN_DIR/cmux-wt-clean"
+chmod 755 "$BIN_DIR/cmux-health"
 
 
 # =============================================================================
