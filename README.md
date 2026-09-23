@@ -1,4 +1,4 @@
-# Cem's cmux Development Environment
+# Cmux Development Environment
 
 This repo backs up the terminal-first development environment on macOS and makes it reproducible.
 
@@ -239,6 +239,44 @@ q           quit
 ```
 
 Text/code files open with Micro.
+
+---
+
+## Markdown Preview & Review
+
+This setup includes a small Markdown workflow for cmux.
+
+```bash
+mdp README.md
+```
+
+Opens the file in cmux's native Markdown preview with live reload.
+
+```bash
+mdr README.md
+```
+
+Runs Markdown linting and shows the Git status plus staged and unstaged diffs for the file.
+
+```bash
+mdb README.md
+```
+
+Runs both preview and review.
+
+Auto-fix supported lint issues with:
+
+```bash
+cmux-md fix README.md
+```
+
+Main components:
+
+```text
+cmux native Markdown viewer
+markdownlint-cli2
+cmux-md helper
+```
 
 ---
 
