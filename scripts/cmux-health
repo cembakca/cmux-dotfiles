@@ -1,0 +1,253 @@
+#!/bin/zsh
+
+set +e
+
+PASS=0
+WARN=0
+FAIL=0
+
+ok() {
+  echo "  [OK]   $1"
+  PASS=$((PASS + 1))
+}
+
+warn() {
+  echo "  [WARN] $1"
+  WARN=$((WARN + 1))
+}
+
+fail() {
+  echo "  [FAIL] $1"
+  FAIL=$((FAIL + 1))
+}
+
+section() {
+  echo
+  echo "== $1 =="
+}
+
+
+# =============================================================================
+# CMUX
+# =============================================================================
+
+section "cmux"
+
+if command -v cmux >/dev/null 2>&1; then
+  ok "cmux found: $(command -v cmux)"
+  echo "         $(cmux --version 2>/dev/null)"
+else
+  fail "cmux not found"
+fi
+
+if command -v cmux >/dev/null 2>&1; then
+  if cmux config doctor >/tmp/cmux-health-doctor.txt 2>&1; then
+    ok "cmux config doctor passed"
+  else
+    fail "cmux config doctor failed"
+    sed 's/^/         /' /tmp/cmux-health-doctor.txt
+  fi
+fi
+
+
+# =============================================================================
+# CONFIG FILES
+# =============================================================================
+
+section "config files"
+
+files=(
+  "$HOME/.config/cmux/cmux.json"
+  "$HOME/.config/ghostty/config"
+  "$HOME/.config/starship.toml"
+  "$HOME/.zshrc"
+)
+
+for file in "${files[@]}"; do
+  if [ -f "$file" ]; then
+    ok "$file"
+  else
+    fail "missing: $file"
+  fi
+done
+
+
+# =============================================================================
+# CLAUDE / CODEX
+# =============================================================================
+
+section "agents"
+
+if command -v claude >/dev/null 2>&1; then
+  ok "claude found"
+  echo "         $(claude --version 2>/dev/null | head -n 1)"
+
+  claude_def="$(whence -f claude 2>/dev/null)"
+
+  if echo "$claude_def" | grep -q "_cmux_claude_wrapper_command"; then
+    ok "cmux Claude wrapper active"
+  else
+    warn "Claude found, but cmux wrapper not detected in this shell"
+  fi
+else
+  fail "claude not found"
+fi
+
+
+if command -v codex >/dev/null 2>&1; then
+  ok "codex found"
+  echo "         $(codex --version 2>/dev/null | head -n 1)"
+else
+  warn "codex not found"
+fi
+
+
+# =============================================================================
+# NODE / NVM
+# =============================================================================
+
+section "node"
+
+if command -v node >/dev/null 2>&1; then
+  ok "node found: $(command -v node)"
+  echo "         $(node -v 2>/dev/null)"
+else
+  fail "node not found"
+fi
+
+if /bin/sh -c 'command -v node >/dev/null 2>&1'; then
+  ok "/bin/sh can see node"
+else
+  fail "/bin/sh cannot see node"
+fi
+
+if [ -d "$HOME/.nvm" ]; then
+  ok "NVM directory exists"
+else
+  warn "NVM directory not found"
+fi
+
+
+# =============================================================================
+# CLI TOOLS
+# =============================================================================
+
+section "CLI tools"
+
+for cmd in git fzf rg fd bat starship zoxide; do
+  if command -v "$cmd" >/dev/null 2>&1; then
+    ok "$cmd: $(command -v "$cmd")"
+  else
+    fail "$cmd not found"
+  fi
+done
+
+
+# =============================================================================
+# ZSH PLUGINS
+# =============================================================================
+
+section "zsh plugins"
+
+plugins=(
+  "$HOME/.zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh"
+  "$HOME/.zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+)
+
+for plugin in "${plugins[@]}"; do
+  if [ -f "$plugin" ]; then
+    ok "$plugin"
+  else
+    fail "missing: $plugin"
+  fi
+done
+
+if [ -d "$HOME/.oh-my-zsh" ]; then
+  ok "Oh My Zsh installed"
+else
+  fail "Oh My Zsh missing"
+fi
+
+
+# =============================================================================
+# HELPER SCRIPTS
+# =============================================================================
+
+section "helper scripts"
+
+helpers=(
+  "$HOME/.local/bin/cmux-init"
+  "$HOME/.local/bin/cmux-wt-clean"
+)
+
+for helper in "${helpers[@]}"; do
+  if [ -x "$helper" ]; then
+    ok "$helper executable"
+  elif [ -f "$helper" ]; then
+    fail "$helper exists but is not executable"
+  else
+    fail "$helper missing"
+  fi
+done
+
+
+# =============================================================================
+# DOTFILES
+# =============================================================================
+
+section "dotfiles"
+
+if [ -d "$HOME/.dotfiles/.git" ]; then
+  ok "dotfiles git repo exists"
+else
+  warn "~/.dotfiles is not a git repo"
+fi
+
+if [ -x "$HOME/.dotfiles/sync.sh" ]; then
+  ok "dotfiles sync.sh executable"
+else
+  fail "dotfiles sync.sh missing or not executable"
+fi
+
+if [ -x "$HOME/.dotfiles/install.sh" ]; then
+  ok "dotfiles install.sh executable"
+else
+  fail "dotfiles install.sh missing or not executable"
+fi
+
+
+# =============================================================================
+# STARSHIP
+# =============================================================================
+
+section "prompt"
+
+if command -v starship >/dev/null 2>&1; then
+  if [ -n "$STARSHIP_SESSION_KEY" ]; then
+    ok "Starship active in current shell"
+  else
+    warn "Starship installed but not active in current shell"
+  fi
+fi
+
+
+# =============================================================================
+# SUMMARY
+# =============================================================================
+
+echo
+echo "========================================"
+echo " Health summary"
+echo "========================================"
+echo " OK   : $PASS"
+echo " WARN : $WARN"
+echo " FAIL : $FAIL"
+echo
+
+if [ "$FAIL" -gt 0 ]; then
+  echo "Some checks failed."
+  exit 1
+fi
+
+echo "Environment looks healthy."
+exit 0

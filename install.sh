@@ -297,9 +297,23 @@ cp \
   "$DOTFILES/scripts/cmux-health" \
   "$BIN_DIR/cmux-health"
 
+cp \
+  "$DOTFILES/scripts/cmux-secrets-check" \
+  "$BIN_DIR/cmux-secrets-check"
+
 chmod 755 "$BIN_DIR/cmux-init"
 chmod 755 "$BIN_DIR/cmux-wt-clean"
 chmod 755 "$BIN_DIR/cmux-health"
+chmod 755 "$BIN_DIR/cmux-secrets-check"
+
+# --- Dotfiles Git hook ----------------------------------------------------
+
+# Dotfiles repo'sunda her commit'ten once secret scan calissin.
+if [ -d "$DOTFILES/.git" ]; then
+  ln -sf \
+    "$DOTFILES/hooks/pre-commit" \
+    "$DOTFILES/.git/hooks/pre-commit"
+fi
 
 
 # =============================================================================

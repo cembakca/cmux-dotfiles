@@ -10,11 +10,18 @@
 *.env
 .env
 .env.*
+!.env.example
+!.env.template
+!.env.sample
 *.key
 *.pem
 *.p12
 *.pfx
 *.crt
+credentials
+credentials.*
+secrets
+secrets.*
 
 # Never copy these into dotfiles
 .ssh/

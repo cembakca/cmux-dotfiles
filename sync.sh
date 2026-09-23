@@ -37,6 +37,9 @@ cp "$HOME/.local/bin/cmux-wt-clean" \
 cp "$HOME/.local/bin/cmux-health" \
    "$DOTFILES/scripts/cmux-health"
 
+cp "$HOME/.local/bin/cmux-secrets-check" \
+   "$DOTFILES/scripts/cmux-secrets-check"
+
 chmod 755 "$DOTFILES/scripts/cmux-init"
 chmod 755 "$DOTFILES/scripts/cmux-wt-clean"
 
