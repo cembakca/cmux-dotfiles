@@ -1,0 +1,282 @@
+#!/bin/zsh
+
+set -u
+
+usage() {
+  cat <<'TXT'
+Kullanim:
+
+  cmux-ports
+      Dinleyen local TCP portlarini goster.
+
+  cmux-ports who <port>
+      Bir portu hangi process'in kullandigini goster.
+
+  cmux-ports free [start] [end]
+      Verilen aralikta ilk bos portu bul.
+      Default: 3000-3099
+
+  cmux-ports kill <port>
+      Portu kullanan kendi process'ini onay isteyerek durdur.
+TXT
+}
+
+
+# =============================================================================
+# HELPERS
+# =============================================================================
+
+valid_port() {
+  [[ "$1" =~ '^[0-9]+$' ]] &&
+    [ "$1" -ge 1 ] &&
+    [ "$1" -le 65535 ]
+}
+
+port_pid() {
+  lsof -nP \
+    -iTCP:"$1" \
+    -sTCP:LISTEN \
+    -t \
+    2>/dev/null |
+    head -n 1
+}
+
+port_free() {
+  ! lsof -nP \
+    -iTCP:"$1" \
+    -sTCP:LISTEN \
+    >/dev/null 2>&1
+}
+
+
+# =============================================================================
+# LIST
+# =============================================================================
+
+list_ports() {
+  echo
+  echo "Listening TCP ports"
+  echo
+
+  lsof -nP \
+    -iTCP \
+    -sTCP:LISTEN \
+    2>/dev/null |
+    awk '
+      NR == 1 {
+        printf "%-18s %-8s %-12s %s\n", "COMMAND", "PID", "USER", "ADDRESS"
+        next
+      }
+
+      {
+        printf "%-18s %-8s %-12s %s\n", $1, $2, $3, $9
+      }
+    '
+
+  echo
+}
+
+
+# =============================================================================
+# WHO
+# =============================================================================
+
+who_port() {
+  port="$1"
+
+  if ! valid_port "$port"; then
+    echo "Gecersiz port: $port"
+    exit 1
+  fi
+
+  echo
+
+  if port_free "$port"; then
+    echo "Port $port bos."
+    echo
+    exit 0
+  fi
+
+  echo "Port $port:"
+  echo
+
+  lsof -nP \
+    -iTCP:"$port" \
+    -sTCP:LISTEN \
+    2>/dev/null
+
+  pid="$(port_pid "$port")"
+
+  if [ -n "$pid" ]; then
+    echo
+    echo "Process:"
+    ps -p "$pid" \
+      -o pid=,ppid=,user=,etime=,command=
+  fi
+
+  echo
+}
+
+
+# =============================================================================
+# FIND FREE PORT
+# =============================================================================
+
+find_free() {
+  start="${1:-3000}"
+  end="${2:-3099}"
+
+  if ! valid_port "$start" || ! valid_port "$end"; then
+    echo "Gecersiz port araligi."
+    exit 1
+  fi
+
+  if [ "$start" -gt "$end" ]; then
+    echo "Baslangic portu bitis portundan buyuk olamaz."
+    exit 1
+  fi
+
+  port="$start"
+
+  while [ "$port" -le "$end" ]; do
+    if port_free "$port"; then
+      echo "$port"
+      return 0
+    fi
+
+    port=$((port + 1))
+  done
+
+  echo "$start-$end araliginda bos port bulunamadi." >&2
+  return 1
+}
+
+
+# =============================================================================
+# KILL
+# =============================================================================
+
+kill_port() {
+  port="$1"
+
+  if ! valid_port "$port"; then
+    echo "Gecersiz port: $port"
+    exit 1
+  fi
+
+  pid="$(port_pid "$port")"
+
+  if [ -z "$pid" ]; then
+    echo "Port $port zaten bos."
+    exit 0
+  fi
+
+  owner="$(
+    ps -p "$pid" -o user= |
+      xargs
+  )"
+
+  current_user="$(id -un)"
+
+  echo
+  echo "Port : $port"
+  echo "PID  : $pid"
+  echo "User : $owner"
+  echo
+
+  ps -p "$pid" \
+    -o pid=,ppid=,user=,etime=,command=
+
+  echo
+
+  # Baska kullanicinin process'ine dokunma.
+  if [ "$owner" != "$current_user" ]; then
+    echo "Bu process sana ait degil."
+    echo "Durdurulmayacak."
+    exit 1
+  fi
+
+  read "answer?Bu process durdurulsun mu? [y/N] "
+
+  case "$answer" in
+    y|Y)
+      ;;
+    *)
+      echo "Iptal edildi."
+      exit 0
+      ;;
+  esac
+
+  # Once normal SIGTERM gonder.
+  kill "$pid"
+
+  # Process'e kapanmasi icin kisa sure ver.
+  for _ in {1..10}; do
+    if ! kill -0 "$pid" 2>/dev/null; then
+      echo "Process durduruldu."
+      return 0
+    fi
+
+    sleep 0.2
+  done
+
+  echo
+  echo "Process hala calisiyor."
+  read "force?SIGKILL ile zorla durdurulsun mu? [y/N] "
+
+  case "$force" in
+    y|Y)
+      kill -9 "$pid"
+      echo "Process zorla durduruldu."
+      ;;
+    *)
+      echo "Process calismaya devam ediyor."
+      ;;
+  esac
+}
+
+
+# =============================================================================
+# COMMAND
+# =============================================================================
+
+command="${1:-list}"
+
+case "$command" in
+  list)
+    list_ports
+    ;;
+
+  who)
+    [ $# -ge 2 ] || {
+      usage
+      exit 1
+    }
+
+    who_port "$2"
+    ;;
+
+  free)
+    find_free "${2:-3000}" "${3:-3099}"
+    ;;
+
+  kill)
+    [ $# -ge 2 ] || {
+      usage
+      exit 1
+    }
+
+    kill_port "$2"
+    ;;
+
+  help|-h|--help)
+    usage
+    ;;
+
+  *)
+    echo "Bilinmeyen command: $command"
+    echo
+    usage
+    exit 1
+    ;;
+esac
