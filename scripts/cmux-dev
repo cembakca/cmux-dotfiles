@@ -1,0 +1,244 @@
+#!/bin/zsh
+
+set -u
+
+
+# =============================================================================
+# HELPERS
+# =============================================================================
+
+run_tool() {
+  tool="$1"
+  shift
+
+  if ! command -v "$tool" >/dev/null 2>&1; then
+    echo
+    echo "$tool bulunamadi."
+    echo
+    return 1
+  fi
+
+  "$tool" "$@"
+}
+
+
+pause() {
+  echo
+  read "?Devam etmek icin Enter..."
+}
+
+
+# =============================================================================
+# PORT MENU
+# =============================================================================
+
+ports_menu() {
+  while true; do
+    choice="$(
+      printf '%s\n' \
+        "List ports" \
+        "Who uses a port" \
+        "Find free port" \
+        "Stop process on port" \
+        "Back" |
+        fzf \
+          --prompt="Ports > " \
+          --height=40% \
+          --reverse \
+          --border
+    )"
+
+    [ -z "$choice" ] && return 0
+
+    case "$choice" in
+      "List ports")
+        clear
+        run_tool cmux-ports
+        pause
+        ;;
+
+      "Who uses a port")
+        echo
+        read "port?Port: "
+        [ -z "$port" ] && continue
+
+        clear
+        run_tool cmux-ports who "$port"
+        pause
+        ;;
+
+      "Find free port")
+        echo
+        read "start?Start port [3000]: "
+        read "end?End port [3099]: "
+
+        start="${start:-3000}"
+        end="${end:-3099}"
+
+        clear
+        echo
+        echo "First free port:"
+        echo
+        run_tool cmux-ports free "$start" "$end"
+        pause
+        ;;
+
+      "Stop process on port")
+        echo
+        read "port?Port: "
+        [ -z "$port" ] && continue
+
+        clear
+        run_tool cmux-ports kill "$port"
+        pause
+        ;;
+
+      "Back")
+        return 0
+        ;;
+    esac
+  done
+}
+
+
+# =============================================================================
+# MAIN MENU
+# =============================================================================
+
+main_menu() {
+  if ! command -v fzf >/dev/null 2>&1; then
+    echo "fzf bulunamadi."
+    exit 1
+  fi
+
+  while true; do
+    choice="$(
+      printf '%s\n' \
+        "Health              - cmux / shell environment check" \
+        "Ports               - inspect and manage local ports" \
+        "Browser Debug       - snapshot, console, errors, screenshot" \
+        "Worktree Cleanup    - safely remove old worktrees" \
+        "Version / Schema    - check cmux build and schema alignment" \
+        "Secret Scan         - scan staged files for secrets" \
+        "Exit" |
+        fzf \
+          --prompt="Dev Control > " \
+          --header="cmux development control center" \
+          --height=50% \
+          --reverse \
+          --border
+    )"
+
+    [ -z "$choice" ] && exit 0
+
+    case "$choice" in
+      Health*)
+        clear
+        run_tool cmux-health
+        pause
+        ;;
+
+      Ports*)
+        ports_menu
+        ;;
+
+      "Browser Debug"*)
+        clear
+        run_tool cmux-browser-debug
+        pause
+        ;;
+
+      "Worktree Cleanup"*)
+        clear
+        run_tool cmux-wt-clean
+        pause
+        ;;
+
+      "Version / Schema"*)
+        clear
+        run_tool cmux-version-check
+        pause
+        ;;
+
+      "Secret Scan"*)
+        clear
+        run_tool cmux-secrets-check
+        pause
+        ;;
+
+      Exit)
+        exit 0
+        ;;
+    esac
+  done
+}
+
+
+# =============================================================================
+# DIRECT COMMANDS
+# =============================================================================
+
+command="${1:-menu}"
+
+case "$command" in
+  menu)
+    main_menu
+    ;;
+
+  health)
+    run_tool cmux-health
+    ;;
+
+  ports)
+    shift
+    if [ $# -eq 0 ]; then
+      ports_menu
+    else
+      run_tool cmux-ports "$@"
+    fi
+    ;;
+
+  browser)
+    shift
+    run_tool cmux-browser-debug "$@"
+    ;;
+
+  worktrees|worktree)
+    run_tool cmux-wt-clean
+    ;;
+
+  version|schema)
+    run_tool cmux-version-check
+    ;;
+
+  secrets)
+    run_tool cmux-secrets-check
+    ;;
+
+  help|-h|--help)
+    cat <<'TXT'
+cmux-dev
+
+Interactive:
+  cmux-dev
+
+Direct commands:
+  cmux-dev health
+  cmux-dev ports
+  cmux-dev ports who 3000
+  cmux-dev ports free
+  cmux-dev browser
+  cmux-dev worktrees
+  cmux-dev version
+  cmux-dev secrets
+TXT
+    ;;
+
+  *)
+    echo "Bilinmeyen command: $command"
+    echo
+    echo "Kullanim:"
+    echo "  cmux-dev --help"
+    exit 1
+    ;;
+esac
