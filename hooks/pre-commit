@@ -1,0 +1,11 @@
+#!/bin/zsh
+
+set -e
+
+if command -v cmux-secrets-check >/dev/null 2>&1; then
+  cmux-secrets-check
+else
+  echo "cmux-secrets-check bulunamadi."
+  echo "Commit guvenlik nedeniyle durduruldu."
+  exit 1
+fi
