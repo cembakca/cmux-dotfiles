@@ -1,0 +1,18 @@
+# =============================================================================
+# YAZI KEYMAPS
+# =============================================================================
+
+[mgr]
+
+# Default keymap'leri koruyoruz.
+# Sadece bizim kullanacagimiz iki kolay shortcut'i one ekliyoruz.
+prepend_keymap = [
+
+  # Dotfile'lari hizlica ac / kapat.
+  { on = ".", run = "hidden toggle", desc = "Toggle hidden files" },
+
+  # Current directory icinde flat file view.
+  # fd zaten bizim shell setup'imizda kurulu.
+  { on = [ "g", "f" ], run = 'search_do --via=fd --args="-d 3"', desc = "Flat file view" },
+
+]

@@ -1,0 +1,92 @@
+# =============================================================================
+# YAZI
+# =============================================================================
+
+[mgr]
+
+# Parent | current directory | preview
+# Preview'a biraz daha fazla alan ayir.
+ratio = [ 1, 3, 4 ]
+
+# Dosya isimlerini 1, 2, 10 seklinde dogal sirala.
+sort_by = "natural"
+sort_sensitive = false
+sort_reverse = false
+sort_dir_first = true
+
+# Dosya boyutunu listede goster.
+linemode = "size"
+
+# Developer dotfile'lari default olarak gorunsun.
+show_hidden = true
+
+# Symlink hedefini de goster.
+show_symlink = true
+
+# Cursor ekran kenarina yapismasin.
+scrolloff = 5
+
+
+# =============================================================================
+# PREVIEW
+# =============================================================================
+
+[preview]
+
+# Code preview'da uzun satirlari wrap etme.
+wrap = "no"
+
+# Kod tab genisligi bizim diger config'lerle uyumlu.
+tab_size = 2
+
+# Image preview icin makul limit.
+max_width = 1600
+max_height = 1200
+
+# Hizli gezinirken image rendering terminali yormasin.
+image_delay = 30
+
+# Kaliteli image scaling.
+image_filter = "lanczos3"
+image_quality = 80
+
+
+# =============================================================================
+# EDITOR
+# =============================================================================
+
+[opener]
+
+# Text dosyalari Yazi icinden Micro ile acilsin.
+# block=true sayesinde Micro'dan cikinca Yazi'ye geri donersin.
+edit = [
+  { run = "micro %s", block = true, desc = "Micro", for = "unix" },
+]
+
+
+# =============================================================================
+# OPEN RULES
+# =============================================================================
+
+[open]
+
+# Text ve yaygin developer dosyalari editor'e gitsin.
+prepend_rules = [
+  { mime = "text/*", use = "edit" },
+
+  { url = "*.json", use = "edit" },
+  { url = "*.jsonc", use = "edit" },
+  { url = "*.toml", use = "edit" },
+  { url = "*.yaml", use = "edit" },
+  { url = "*.yml", use = "edit" },
+
+  { url = "*.js", use = "edit" },
+  { url = "*.jsx", use = "edit" },
+  { url = "*.ts", use = "edit" },
+  { url = "*.tsx", use = "edit" },
+
+  { url = "*.sh", use = "edit" },
+  { url = "*.zsh", use = "edit" },
+
+  { url = "*.md", use = "edit" },
+]

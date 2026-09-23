@@ -1,0 +1,9 @@
+# =============================================================================
+# YAZI THEME
+# =============================================================================
+
+# Ghostty / Micro tarafiyla ayni Catppuccin Mocha paleti.
+# Flavor package manager ile yonetildigi icin tema guncellemeleri kolay kalir.
+
+[flavor]
+dark = "catppuccin-mocha"
