@@ -1,0 +1,11 @@
+{
+  // Uzun dokumantasyon satirlari icin line-length zorlamasi yapma.
+  "config": {
+    "MD013": false,
+
+    // README'lerde gerekli HTML kullanimi sorun sayilmasin.
+    "MD033": false
+  },
+
+  "noProgress": true
+}

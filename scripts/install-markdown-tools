@@ -1,0 +1,39 @@
+#!/bin/zsh
+
+set -e
+
+DOTFILES="${DOTFILES:-$HOME/.dotfiles}"
+BIN_DIR="${BIN_DIR:-$HOME/.local/bin}"
+
+mkdir -p "$BIN_DIR"
+mkdir -p "$HOME/.local/share/markdown-tools"
+mkdir -p "$HOME/.config/markdownlint-cli2"
+
+if ! command -v npm >/dev/null 2>&1; then
+  echo "WARNING: npm bulunamadi."
+  echo "Markdown review kurulumu atlandi."
+  exit 0
+fi
+
+echo "Installing markdownlint-cli2..."
+
+npm install \
+  --prefix "$HOME/.local/share/markdown-tools" \
+  --no-save \
+  markdownlint-cli2@latest
+
+ln -sf \
+  "$HOME/.local/share/markdown-tools/node_modules/.bin/markdownlint-cli2" \
+  "$BIN_DIR/markdownlint-cli2"
+
+cp \
+  "$DOTFILES/scripts/cmux-md" \
+  "$BIN_DIR/cmux-md"
+
+chmod 755 "$BIN_DIR/cmux-md"
+
+cp \
+  "$DOTFILES/config/markdownlint-cli2/config.jsonc" \
+  "$HOME/.config/markdownlint-cli2/config.jsonc"
+
+echo "Markdown toolkit installed."

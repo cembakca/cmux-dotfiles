@@ -1,0 +1,232 @@
+#!/bin/zsh
+
+set -u
+
+CONFIG="$HOME/.config/markdownlint-cli2/config.jsonc"
+
+
+usage() {
+  cat <<'TXT'
+cmux-md
+
+Usage:
+  cmux-md preview <file>
+  cmux-md review  <file>
+  cmux-md both    <file>
+  cmux-md fix     <file>
+
+Short aliases:
+  mdp README.md
+  mdr README.md
+  mdb README.md
+TXT
+}
+
+
+resolve_file() {
+  local input="$1"
+
+  if [ ! -f "$input" ]; then
+    echo "Dosya bulunamadi: $input" >&2
+    return 1
+  fi
+
+  local dir
+  local base
+
+  dir="$(cd "$(dirname "$input")" && pwd)"
+  base="$(basename "$input")"
+
+  printf '%s/%s\n' "$dir" "$base"
+}
+
+
+preview() {
+  local file="$1"
+
+  echo
+  echo "Markdown Preview"
+  echo "  $file"
+  echo
+
+  # cmux'un native Markdown viewer'i live reload destekler.
+  if ! cmux markdown open "$file"; then
+    echo
+    echo "cmux native Markdown viewer calistirilamadi."
+    echo
+    echo "Kontrol:"
+    echo "  cmux markdown --help"
+    return 1
+  fi
+}
+
+
+review() {
+  local file="$1"
+  local lint_status=0
+
+  echo
+  echo "========================================"
+  echo " Markdown Review"
+  echo "========================================"
+  echo
+  echo "File:"
+  echo "  $file"
+  echo
+
+
+  # ===========================================================================
+  # LINT
+  # ===========================================================================
+
+  echo "== Markdown lint =="
+  echo
+
+  markdownlint-cli2 \
+    --config "$CONFIG" \
+    -- "$file"
+
+  lint_status=$?
+
+  if [ "$lint_status" -eq 0 ]; then
+    echo
+    echo "[OK] Markdown lint passed."
+  else
+    echo
+    echo "[WARN] Markdown lint found issues."
+  fi
+
+
+  # ===========================================================================
+  # GIT
+  # ===========================================================================
+
+  local file_dir
+  local repo
+  local rel
+
+  file_dir="$(dirname "$file")"
+
+  repo="$(
+    git -C "$file_dir" rev-parse --show-toplevel 2>/dev/null ||
+      true
+  )"
+
+  if [ -z "$repo" ]; then
+    echo
+    echo "== Git review =="
+    echo
+    echo "Dosya bir Git reposu icinde degil."
+    echo
+
+    return "$lint_status"
+  fi
+
+  rel="${file#$repo/}"
+
+  echo
+  echo "== Git status =="
+  echo
+
+  git -C "$repo" status --short -- "$rel"
+
+  echo
+  echo "== Working tree diff =="
+  echo
+
+  if git -C "$repo" diff --quiet -- "$rel"; then
+    echo "No unstaged changes."
+  else
+    git -C "$repo" diff --color=always -- "$rel"
+  fi
+
+  echo
+  echo "== Staged diff =="
+  echo
+
+  if git -C "$repo" diff --cached --quiet -- "$rel"; then
+    echo "No staged changes."
+  else
+    git -C "$repo" diff --cached --color=always -- "$rel"
+  fi
+
+  echo
+  echo "========================================"
+
+  if [ "$lint_status" -eq 0 ]; then
+    echo " Review completed."
+  else
+    echo " Review completed with lint findings."
+  fi
+
+  echo
+
+  return "$lint_status"
+}
+
+
+fix_markdown() {
+  local file="$1"
+
+  markdownlint-cli2 \
+    --config "$CONFIG" \
+    --fix \
+    -- "$file"
+}
+
+
+command="${1:-}"
+input="${2:-}"
+
+case "$command" in
+  preview|open)
+    [ -n "$input" ] || {
+      usage
+      exit 1
+    }
+
+    file="$(resolve_file "$input")" || exit 1
+    preview "$file"
+    ;;
+
+  review)
+    [ -n "$input" ] || {
+      usage
+      exit 1
+    }
+
+    file="$(resolve_file "$input")" || exit 1
+    review "$file"
+    ;;
+
+  both)
+    [ -n "$input" ] || {
+      usage
+      exit 1
+    }
+
+    file="$(resolve_file "$input")" || exit 1
+
+    preview "$file"
+    review "$file"
+    ;;
+
+  fix)
+    [ -n "$input" ] || {
+      usage
+      exit 1
+    }
+
+    file="$(resolve_file "$input")" || exit 1
+    fix_markdown "$file"
+    ;;
+
+  help|-h|--help)
+    usage
+    ;;
+
+  *)
+    usage
+    exit 1
+    ;;
+esac

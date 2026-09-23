@@ -126,3 +126,26 @@ echo
 
 cd "$DOTFILES"
 git status --short
+
+
+# =============================================================================
+# MARKDOWN TOOLKIT SYNC
+# =============================================================================
+
+mkdir -p "$DOTFILES/config/markdownlint-cli2"
+mkdir -p "$DOTFILES/scripts"
+
+if [ -f "$HOME/.local/bin/cmux-md" ]; then
+  cp \
+    "$HOME/.local/bin/cmux-md" \
+    "$DOTFILES/scripts/cmux-md"
+
+  chmod 755 "$DOTFILES/scripts/cmux-md"
+fi
+
+if [ -f "$HOME/.config/markdownlint-cli2/config.jsonc" ]; then
+  cp \
+    "$HOME/.config/markdownlint-cli2/config.jsonc" \
+    "$DOTFILES/config/markdownlint-cli2/config.jsonc"
+fi
+

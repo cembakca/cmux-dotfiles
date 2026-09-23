@@ -573,3 +573,13 @@ for helper in "${helpers[@]}"; do
     chmod 755 "$BIN_DIR/$helper"
   fi
 done
+
+
+# =============================================================================
+# MARKDOWN TOOLKIT INSTALL
+# =============================================================================
+
+if [ -x "$DOTFILES/scripts/install-markdown-tools" ]; then
+  "$DOTFILES/scripts/install-markdown-tools"
+fi
+
