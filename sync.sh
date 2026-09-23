@@ -40,6 +40,9 @@ cp "$HOME/.local/bin/cmux-health" \
 cp "$HOME/.local/bin/cmux-secrets-check" \
    "$DOTFILES/scripts/cmux-secrets-check"
 
+cp "$HOME/.local/bin/cmux-browser-debug" \
+   "$DOTFILES/scripts/cmux-browser-debug"
+
 chmod 755 "$DOTFILES/scripts/cmux-init"
 chmod 755 "$DOTFILES/scripts/cmux-wt-clean"
 

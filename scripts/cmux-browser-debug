@@ -1,0 +1,193 @@
+#!/bin/zsh
+
+set -u
+
+
+# =============================================================================
+# FIND BROWSER SURFACE
+# =============================================================================
+
+surface="${1:-}"
+
+# Surface elle verilmediyse cmux tree'den browser'lari bul.
+if [ -z "$surface" ]; then
+  browser_lines="$(
+    cmux tree 2>/dev/null |
+      grep '\[browser\]'
+  )"
+
+  if [ -z "$browser_lines" ]; then
+    echo
+    echo "Aktif cmux session'inda browser surface bulunamadi."
+    echo
+    echo "Browser acip tekrar dene."
+    exit 1
+  fi
+
+  browser_count="$(
+    printf '%s\n' "$browser_lines" |
+      grep -c '\[browser\]'
+  )"
+
+  # Tek browser varsa direkt kullan.
+  if [ "$browser_count" -eq 1 ]; then
+    selected="$browser_lines"
+
+  # Birden fazla browser varsa fzf ile sec.
+  else
+    if command -v fzf >/dev/null 2>&1; then
+      echo "Birden fazla browser bulundu." >&2
+
+      selected="$(
+        printf '%s\n' "$browser_lines" |
+          fzf \
+            --prompt="Browser sec > " \
+            --height=40% \
+            --reverse
+      )"
+
+      # Kullanici picker'i kapattiysa cik.
+      [ -z "$selected" ] && exit 0
+    else
+      echo
+      echo "Birden fazla browser bulundu:"
+      echo
+      printf '%s\n' "$browser_lines"
+      echo
+      echo "fzf bulunamadigi icin otomatik secim yapilmadi."
+      exit 1
+    fi
+  fi
+
+  surface="$(
+    printf '%s\n' "$selected" |
+      sed -E 's/.*(surface:[0-9]+).*/\1/'
+  )"
+fi
+
+
+# =============================================================================
+# VALIDATE TARGET
+# =============================================================================
+
+if ! echo "$surface" | grep -Eq '^surface:[0-9]+$'; then
+  echo "Gecersiz surface ID: $surface"
+  exit 1
+fi
+
+# Gercekten browser oldugunu dogrula.
+if ! cmux browser "$surface" get url >/dev/null 2>&1; then
+  echo
+  echo "$surface bir browser surface degil."
+  echo
+  echo "Browser surface'larini gormek icin:"
+  echo "  cmux tree"
+  exit 1
+fi
+
+
+# =============================================================================
+# OUTPUT DIRECTORY
+# =============================================================================
+
+timestamp="$(date +%Y%m%d-%H%M%S)"
+out="/tmp/cmux-browser-debug-$timestamp"
+
+mkdir -p "$out"
+
+echo
+echo "Browser debug"
+echo "Surface : $surface"
+echo "Output  : $out"
+echo
+
+
+# =============================================================================
+# PAGE METADATA
+# =============================================================================
+
+{
+  echo "Surface: $surface"
+
+  echo
+  echo "URL:"
+  cmux browser "$surface" get url 2>&1 || true
+
+  echo
+  echo "Title:"
+  cmux browser "$surface" get title 2>&1 || true
+} > "$out/page.txt"
+
+
+# =============================================================================
+# DOM SNAPSHOT
+# =============================================================================
+
+echo "Collecting DOM snapshot..."
+
+cmux browser "$surface" snapshot \
+  --interactive \
+  --compact \
+  > "$out/snapshot.txt" 2>&1 || true
+
+
+# =============================================================================
+# CONSOLE
+# =============================================================================
+
+echo "Collecting browser console..."
+
+cmux browser "$surface" console list \
+  > "$out/console.txt" 2>&1 || true
+
+
+# =============================================================================
+# JAVASCRIPT ERRORS
+# =============================================================================
+
+echo "Collecting browser errors..."
+
+cmux browser "$surface" errors list \
+  > "$out/errors.txt" 2>&1 || true
+
+
+# =============================================================================
+# SCREENSHOT
+# =============================================================================
+
+echo "Taking screenshot..."
+
+cmux browser "$surface" screenshot \
+  --out "$out/screenshot.png" \
+  >/dev/null 2>&1 || true
+
+
+# =============================================================================
+# SUMMARY
+# =============================================================================
+
+echo
+echo "========================================"
+echo " Debug bundle ready"
+echo "========================================"
+echo
+
+cat "$out/page.txt"
+
+echo
+echo "Files:"
+echo "  $out/page.txt"
+echo "  $out/snapshot.txt"
+echo "  $out/console.txt"
+echo "  $out/errors.txt"
+
+if [ -f "$out/screenshot.png" ]; then
+  echo "  $out/screenshot.png"
+fi
+
+echo
+echo "Quick inspect:"
+echo "  bat $out/errors.txt"
+echo "  bat $out/console.txt"
+echo "  bat $out/snapshot.txt"
+echo
