@@ -1,0 +1,219 @@
+#!/bin/zsh
+
+set -u
+
+OK=0
+WARN=0
+FAIL=0
+
+ok() {
+  echo "  [OK]   $1"
+  OK=$((OK + 1))
+}
+
+warn() {
+  echo "  [WARN] $1"
+  WARN=$((WARN + 1))
+}
+
+fail() {
+  echo "  [FAIL] $1"
+  FAIL=$((FAIL + 1))
+}
+
+section() {
+  echo
+  echo "== $1 =="
+}
+
+
+# =============================================================================
+# INSTALLED CMUX
+# =============================================================================
+
+section "installed cmux"
+
+if ! command -v cmux >/dev/null 2>&1; then
+  fail "cmux not found"
+  exit 1
+fi
+
+version="$(cmux --version 2>/dev/null)"
+
+echo "  $version"
+
+# Example:
+# cmux 0.64.22 (102) [ddd4a01bc]
+installed_commit="$(
+  printf '%s\n' "$version" |
+    sed -n 's/.*\[\([^]]*\)\].*/\1/p'
+)"
+
+if [ -z "$installed_commit" ]; then
+  fail "cmux build commit could not be detected"
+  exit 1
+fi
+
+ok "installed commit: $installed_commit"
+
+
+# =============================================================================
+# CONFIG CHECKER
+# =============================================================================
+
+check_config() {
+  file="$1"
+  label="$2"
+
+  echo
+  echo "-- $label --"
+
+  if [ ! -f "$file" ]; then
+    warn "config not found: $file"
+    return
+  fi
+
+  echo "  File: $file"
+
+  schema="$(
+    grep -m 1 '"\$schema"' "$file" 2>/dev/null |
+      sed -E 's/.*"(\$schema)"[[:space:]]*:[[:space:]]*"([^"]+)".*/\2/'
+  )"
+
+  schema_version="$(
+    grep -m 1 '"schemaVersion"' "$file" 2>/dev/null |
+      sed -E 's/.*"schemaVersion"[[:space:]]*:[[:space:]]*([0-9]+).*/\1/'
+  )"
+
+  if [ -z "$schema" ]; then
+    warn "\$schema not found"
+  else
+    echo "  Schema: $schema"
+
+    if echo "$schema" | grep -q '/main/'; then
+      warn "schema points to main instead of installed build"
+    else
+      schema_commit="$(
+        printf '%s\n' "$schema" |
+          sed -n \
+            's#.*manaflow-ai/cmux/\([^/]*\)/web/data/cmux\.schema\.json.*#\1#p'
+      )"
+
+      if [ -z "$schema_commit" ]; then
+        warn "schema commit could not be detected"
+      elif [ "$schema_commit" = "$installed_commit" ]; then
+        ok "schema matches installed cmux build"
+      else
+        warn "schema mismatch"
+        echo "         installed : $installed_commit"
+        echo "         schema    : $schema_commit"
+      fi
+    fi
+  fi
+
+  if [ -z "$schema_version" ]; then
+    warn "schemaVersion not found"
+  elif [ "$schema_version" = "1" ]; then
+    ok "schemaVersion: 1"
+  else
+    warn "unexpected schemaVersion: $schema_version"
+  fi
+}
+
+
+# =============================================================================
+# GLOBAL CONFIG
+# =============================================================================
+
+section "config schemas"
+
+check_config \
+  "$HOME/.config/cmux/cmux.json" \
+  "global config"
+
+
+# =============================================================================
+# PROJECT CONFIG
+# =============================================================================
+
+repo="$(
+  git rev-parse --show-toplevel 2>/dev/null || true
+)"
+
+if [ -n "$repo" ]; then
+  project_config="$repo/.cmux/cmux.json"
+
+  if [ -f "$project_config" ]; then
+    check_config \
+      "$project_config" \
+      "project config"
+  else
+    echo
+    echo "-- project config --"
+    echo "  No .cmux/cmux.json in current repo."
+  fi
+else
+  echo
+  echo "-- project config --"
+  echo "  Current directory is not inside a git repo."
+fi
+
+
+# =============================================================================
+# CONFIG VALIDATION
+# =============================================================================
+
+section "config validation"
+
+doctor_output="$(
+  cmux config doctor 2>&1
+)"
+doctor_status=$?
+
+if [ "$doctor_status" -eq 0 ]; then
+  ok "cmux config doctor passed"
+else
+  fail "cmux config doctor failed"
+  echo
+  printf '%s\n' "$doctor_output" |
+    sed 's/^/         /'
+fi
+
+
+# =============================================================================
+# RECOMMENDED SCHEMA
+# =============================================================================
+
+section "recommended schema"
+
+recommended="https://raw.githubusercontent.com/manaflow-ai/cmux/$installed_commit/web/data/cmux.schema.json"
+
+echo
+echo '  "$schema": "'"$recommended"'",'
+echo
+
+
+# =============================================================================
+# SUMMARY
+# =============================================================================
+
+echo "========================================"
+echo " Version / schema summary"
+echo "========================================"
+echo " OK   : $OK"
+echo " WARN : $WARN"
+echo " FAIL : $FAIL"
+echo
+
+if [ "$FAIL" -gt 0 ]; then
+  echo "Environment requires attention."
+  exit 1
+fi
+
+if [ "$WARN" -gt 0 ]; then
+  echo "cmux works, but version/schema review is recommended."
+  exit 0
+fi
+
+echo "cmux version and schemas are aligned."
+exit 0

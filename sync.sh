@@ -43,6 +43,9 @@ cp "$HOME/.local/bin/cmux-secrets-check" \
 cp "$HOME/.local/bin/cmux-browser-debug" \
    "$DOTFILES/scripts/cmux-browser-debug"
 
+cp "$HOME/.local/bin/cmux-version-check" \
+   "$DOTFILES/scripts/cmux-version-check"
+
 chmod 755 "$DOTFILES/scripts/cmux-init"
 chmod 755 "$DOTFILES/scripts/cmux-wt-clean"
 

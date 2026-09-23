@@ -307,12 +307,17 @@ cp \
   "$DOTFILES/scripts/cmux-ports" \
   "$BIN_DIR/cmux-ports"
 
+cp \
+  "$DOTFILES/scripts/cmux-version-check" \
+  "$BIN_DIR/cmux-version-check"
+
 chmod 755 "$BIN_DIR/cmux-init"
 chmod 755 "$BIN_DIR/cmux-wt-clean"
 chmod 755 "$BIN_DIR/cmux-health"
 chmod 755 "$BIN_DIR/cmux-secrets-check"
 chmod 755 "$BIN_DIR/cmux-browser-debug"
 chmod 755 "$BIN_DIR/cmux-ports"
+chmod 755 "$BIN_DIR/cmux-version-check"
 
 
 # =============================================================================
