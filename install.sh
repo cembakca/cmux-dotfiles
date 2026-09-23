@@ -138,6 +138,49 @@ if [ -x "$HOME/.fzf/bin/fzf" ]; then
   ln -sf "$HOME/.fzf/bin/fzf" "$BIN_DIR/fzf"
 fi
 
+# --- Yazi -----------------------------------------------------------------
+
+if ! command -v yazi >/dev/null 2>&1; then
+  echo "Installing Yazi..."
+
+  case "$(uname -m)" in
+    arm64)
+      yazi_asset="yazi-aarch64-apple-darwin.zip"
+      ;;
+    x86_64)
+      yazi_asset="yazi-x86_64-apple-darwin.zip"
+      ;;
+    *)
+      echo "Unsupported architecture for Yazi: $(uname -m)"
+      exit 1
+      ;;
+  esac
+
+  tmp="$(mktemp -d)"
+
+  curl -fL \
+    "https://github.com/sxyazi/yazi/releases/latest/download/$yazi_asset" \
+    -o "$tmp/yazi.zip"
+
+  unzip -q "$tmp/yazi.zip" -d "$tmp"
+
+  yazi_bin_dir="$(
+    find "$tmp" -type f -name yazi -perm +111 |
+      head -n 1 |
+      xargs dirname
+  )"
+
+  cp "$yazi_bin_dir/yazi" "$BIN_DIR/yazi"
+  cp "$yazi_bin_dir/ya" "$BIN_DIR/ya"
+
+  chmod 755 "$BIN_DIR/yazi"
+  chmod 755 "$BIN_DIR/ya"
+
+  rm -rf "$tmp"
+else
+  echo "Yazi already installed."
+fi
+
 
 # --- Starship -------------------------------------------------------------
 

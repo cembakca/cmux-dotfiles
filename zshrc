@@ -147,3 +147,41 @@ fi
 # --- Lazygit --------------------------------------------------------------
 # Git islemleri icin terminal UI.
 alias lg="lazygit"
+
+
+# --- Yazi -----------------------------------------------------------------
+
+# Yazi'de gezip ciktiginda shell'i son klasore tasir.
+function y() {
+  local tmp cwd
+
+  tmp="$(mktemp -t yazi-cwd.XXXXXX)"
+
+  yazi "$@" --cwd-file="$tmp"
+
+  if cwd="$(cat "$tmp" 2>/dev/null)" &&
+     [ -n "$cwd" ] &&
+     [ "$cwd" != "$PWD" ]; then
+    builtin cd -- "$cwd"
+  fi
+
+  rm -f -- "$tmp"
+}
+# --- Yazi -----------------------------------------------------------------
+
+# Yazi'den cikinca shell'i son gezilen klasore tasir.
+function y() {
+  local tmp cwd
+
+  tmp="$(mktemp -t yazi-cwd.XXXXXX)"
+
+  yazi "$@" --cwd-file="$tmp"
+
+  if cwd="$(cat "$tmp" 2>/dev/null)" &&
+     [ -n "$cwd" ] &&
+     [ "$cwd" != "$PWD" ]; then
+    builtin cd -- "$cwd"
+  fi
+
+  rm -f -- "$tmp"
+}
