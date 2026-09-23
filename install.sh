@@ -484,3 +484,92 @@ echo
 EOF
 
 chmod 755 ~/.dotfiles/install.sh
+# =============================================================================
+# CMUX AGENT COCKPIT RESTORE
+# =============================================================================
+
+if [ -f "$DOTFILES/scripts/cmux-agents" ]; then
+  cp \
+    "$DOTFILES/scripts/cmux-agents" \
+    "$BIN_DIR/cmux-agents"
+
+  chmod 755 "$BIN_DIR/cmux-agents"
+fi
+
+if [ -f "$DOTFILES/config/cmux/dock.json" ]; then
+  mkdir -p "$HOME/.config/cmux"
+
+  cp \
+    "$DOTFILES/config/cmux/dock.json" \
+    "$HOME/.config/cmux/dock.json"
+fi
+
+
+# =============================================================================
+# CMUX COCKPIT AND USER CONFIG RESTORE
+# =============================================================================
+
+mkdir -p "$HOME/.config/cmux"
+mkdir -p "$HOME/.config/micro/colorschemes"
+mkdir -p "$HOME/.config/yazi"
+mkdir -p "$BIN_DIR"
+
+
+# --- cmux Dock ------------------------------------------------------------
+
+if [ -f "$DOTFILES/config/cmux/dock.json" ]; then
+  cp \
+    "$DOTFILES/config/cmux/dock.json" \
+    "$HOME/.config/cmux/dock.json"
+fi
+
+
+# --- Micro ----------------------------------------------------------------
+
+if [ -f "$DOTFILES/config/micro/settings.json" ]; then
+  cp \
+    "$DOTFILES/config/micro/settings.json" \
+    "$HOME/.config/micro/settings.json"
+fi
+
+if [ -f "$DOTFILES/config/micro/colorschemes/catppuccin-mocha.micro" ]; then
+  cp \
+    "$DOTFILES/config/micro/colorschemes/catppuccin-mocha.micro" \
+    "$HOME/.config/micro/colorschemes/catppuccin-mocha.micro"
+fi
+
+
+# --- Yazi -----------------------------------------------------------------
+
+for file in yazi.toml theme.toml keymap.toml package.toml; do
+  if [ -f "$DOTFILES/config/yazi/$file" ]; then
+    cp \
+      "$DOTFILES/config/yazi/$file" \
+      "$HOME/.config/yazi/$file"
+  fi
+done
+
+
+# --- Helper scripts -------------------------------------------------------
+
+helpers=(
+  cmux-init
+  cmux-wt-clean
+  cmux-health
+  cmux-secrets-check
+  cmux-browser-debug
+  cmux-ports
+  cmux-version-check
+  cmux-dev
+  cmux-agents
+)
+
+for helper in "${helpers[@]}"; do
+  if [ -f "$DOTFILES/scripts/$helper" ]; then
+    cp \
+      "$DOTFILES/scripts/$helper" \
+      "$BIN_DIR/$helper"
+
+    chmod 755 "$BIN_DIR/$helper"
+  fi
+done

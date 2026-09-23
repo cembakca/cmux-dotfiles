@@ -1,0 +1,61 @@
+color-link default "#cdd6f4,#1e1e2e"
+
+color-link comment "italic #6c7086"
+color-link identifier "#cdd6f4"
+color-link identifier.class "#89b4fa"
+color-link identifier.var "#cdd6f4"
+
+color-link constant "#fab387"
+color-link constant.string "#a6e3a1"
+color-link constant.number "#fab387"
+color-link constant.bool "#cba6f7"
+color-link constant.specialChar "#f5c2e7"
+
+color-link statement "#cba6f7"
+color-link type "#f9e2af"
+color-link type.keyword "#cba6f7"
+color-link preproc "#f5c2e7"
+color-link special "#94e2d5"
+
+color-link symbol "#89dceb"
+color-link symbol.brackets "#9399b2"
+color-link symbol.operator "#89dceb"
+color-link symbol.tag "#89b4fa"
+
+color-link underlined "underline #89b4fa"
+color-link error "bold #f38ba8"
+color-link todo "bold #f9e2af"
+
+color-link selection "#cdd6f4,#45475a"
+
+color-link statusline "#cdd6f4,#313244"
+color-link statusline.inactive "#6c7086,#181825"
+color-link statusline.suggestions "#cdd6f4,#45475a"
+
+color-link tabbar "#6c7086,#181825"
+color-link tabbar.active "bold #cba6f7,#313244"
+
+color-link line-number "#585b70,#1e1e2e"
+color-link current-line-number "bold #cba6f7,#1e1e2e"
+
+color-link cursor-line ",#181825"
+
+color-link gutter-info "#89b4fa,#1e1e2e"
+color-link gutter-warning "#f9e2af,#1e1e2e"
+color-link gutter-error "#f38ba8,#1e1e2e"
+
+color-link diff-added "#a6e3a1,#1e1e2e"
+color-link diff-modified "#89b4fa,#1e1e2e"
+color-link diff-deleted "#f38ba8,#1e1e2e"
+
+color-link hlsearch "#1e1e2e,#f9e2af"
+color-link match-brace "bold #1e1e2e,#89b4fa"
+
+color-link trailingws ",#f38ba8"
+color-link tab-error ",#f38ba8"
+
+color-link scrollbar "#6c7086,#181825"
+color-link divider "#313244,#1e1e2e"
+
+color-link message "#a6e3a1,#1e1e2e"
+color-link error-message "#f38ba8,#1e1e2e"

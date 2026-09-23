@@ -1,0 +1,43 @@
+{
+  "colorscheme": "catppuccin-mocha",
+  "truecolor": "on",
+
+  "syntax": true,
+  "cursorline": true,
+  "diffgutter": true,
+
+  "tabsize": 2,
+  "tabstospaces": true,
+  "tabmovement": true,
+
+  "softwrap": false,
+  "wordwrap": false,
+
+  "mouse": true,
+
+  "clipboard": "external",
+  "useprimary": false,
+
+  "hlsearch": true,
+  "incsearch": true,
+  "ignorecase": true,
+
+  "hltrailingws": true,
+  "rmtrailingws": false,
+
+  "autoclose": true,
+  "autoindent": true,
+  "smartpaste": true,
+
+  "savehistory": true,
+  "saveundo": true,
+
+  "statusline": true,
+  "statusformatl": "$(filename) $(modified)  $(line):$(col)  $(opt:filetype)",
+  "statusformatr": "",
+
+  "scrollmargin": 4,
+
+  "splitright": true,
+  "splitbottom": true
+}

@@ -1,0 +1,16 @@
+{
+  "controls": [
+    {
+      "id": "feed",
+      "title": "Feed",
+      "command": "cmux feed tui --legacy",
+      "height": 320
+    },
+    {
+      "id": "agent-events",
+      "title": "Agent Events",
+      "command": "cmux events --category agent --category feed --no-heartbeat --reconnect",
+      "height": 280
+    }
+  ]
+}

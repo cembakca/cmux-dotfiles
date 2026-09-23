@@ -1,0 +1,262 @@
+#!/bin/zsh
+
+set -u
+
+have() {
+  command -v "$1" >/dev/null 2>&1
+}
+
+pause() {
+  echo
+  read "?Devam etmek icin Enter..."
+}
+
+repo_name="-"
+repo_branch="-"
+
+if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  repo_root="$(git rev-parse --show-toplevel 2>/dev/null)"
+  repo_name="$(basename "$repo_root")"
+  repo_branch="$(git branch --show-current 2>/dev/null)"
+  [ -z "$repo_branch" ] && repo_branch="detached"
+fi
+
+
+show_status() {
+  echo
+  echo "========================================"
+  echo " Agent Cockpit"
+  echo "========================================"
+  echo
+
+  echo "Repo"
+  echo "  project : $repo_name"
+  echo "  branch  : $repo_branch"
+  echo
+
+  echo "cmux"
+  if have cmux; then
+    echo "  $(cmux --version 2>/dev/null)"
+  else
+    echo "  MISSING"
+  fi
+
+  echo
+  echo "Agents"
+
+  if have claude; then
+    echo "  Claude : $(claude --version 2>/dev/null | head -n 1)"
+  else
+    echo "  Claude : MISSING"
+  fi
+
+  if have codex; then
+    echo "  Codex  : $(codex --version 2>/dev/null | head -n 1)"
+  else
+    echo "  Codex  : MISSING"
+  fi
+
+  echo
+  echo "Detected agent surfaces"
+
+  agents="$(
+    cmux tree 2>/dev/null |
+      grep -Ei '\[terminal\].*(claude|codex)|"(claude|codex)"' ||
+      true
+  )"
+
+  if [ -n "$agents" ]; then
+    printf '%s\n' "$agents" | sed 's/^/  /'
+  else
+    echo "  none detected"
+  fi
+
+  echo
+  echo "Claude usage"
+  echo "  statusline : model / context / cost"
+  echo "  /context   : context breakdown"
+  echo "  /usage     : rate-limit / account usage"
+}
+
+
+run_feed() {
+  # Bu build'de right-sidebar feed yok.
+  # Feed'i direkt terminal TUI olarak ac.
+  cmux feed tui --legacy
+}
+
+
+show_menu() {
+  if ! have fzf; then
+    echo "fzf bulunamadi."
+    exit 1
+  fi
+
+  while true; do
+    choice="$(
+      printf '%s\n' \
+        "Feed              - agent approvals / activity" \
+        "Status            - agent + repo summary" \
+        "Notifications     - pending notifications" \
+        "Agent Tree        - workspaces / panes / surfaces" \
+        "Resources         - process/resource usage" \
+        "Live Events       - raw cmux event stream" \
+        "Browser Debug     - DOM / console / errors / screenshot" \
+        "Claude Teams      - Claude multi-agent mode" \
+        "Codex Teams       - Codex multi-agent mode" \
+        "Capabilities      - runtime capabilities" \
+        "Exit" |
+        fzf \
+          --prompt="Agent Cockpit > " \
+          --header="$repo_name  •  $repo_branch" \
+          --height=60% \
+          --reverse \
+          --border
+    )"
+
+    [ -z "$choice" ] && exit 0
+
+    case "$choice" in
+      Feed*)
+        run_feed
+        ;;
+
+      Status*)
+        clear
+        show_status
+        pause
+        ;;
+
+      Notifications*)
+        clear
+        cmux list-notifications
+        pause
+        ;;
+
+      "Agent Tree"*)
+        clear
+        cmux tree
+        pause
+        ;;
+
+      Resources*)
+        clear
+        cmux top
+        pause
+        ;;
+
+      "Live Events"*)
+        clear
+        cmux events
+        ;;
+
+      "Browser Debug"*)
+        clear
+
+        if have cmux-browser-debug; then
+          cmux-browser-debug
+        else
+          echo "cmux-browser-debug bulunamadi."
+        fi
+
+        pause
+        ;;
+
+      "Claude Teams"*)
+        exec cmux claude-teams
+        ;;
+
+      "Codex Teams"*)
+        exec cmux codex-teams
+        ;;
+
+      Capabilities*)
+        clear
+        cmux capabilities
+        pause
+        ;;
+
+      Exit)
+        exit 0
+        ;;
+    esac
+  done
+}
+
+
+command="${1:-menu}"
+
+case "$command" in
+  menu)
+    show_menu
+    ;;
+
+  feed)
+    run_feed
+    ;;
+
+  status)
+    show_status
+    ;;
+
+  notifications)
+    cmux list-notifications
+    ;;
+
+  tree)
+    cmux tree
+    ;;
+
+  top)
+    cmux top
+    ;;
+
+  events)
+    cmux events
+    ;;
+
+  browser)
+    shift
+    cmux-browser-debug "$@"
+    ;;
+
+  claude-teams)
+    exec cmux claude-teams
+    ;;
+
+  codex-teams)
+    exec cmux codex-teams
+    ;;
+
+  capabilities)
+    cmux capabilities
+    ;;
+
+  help|-h|--help)
+    cat <<'TXT'
+cmux-agents
+
+Interactive:
+  cmux-agents
+
+Direct:
+  cmux-agents feed
+  cmux-agents status
+  cmux-agents notifications
+  cmux-agents tree
+  cmux-agents top
+  cmux-agents events
+  cmux-agents browser
+  cmux-agents claude-teams
+  cmux-agents codex-teams
+  cmux-agents capabilities
+TXT
+    ;;
+
+  *)
+    echo "Bilinmeyen command: $command"
+    echo
+    echo "cmux-agents --help"
+    exit 1
+    ;;
+esac
