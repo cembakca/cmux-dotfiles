@@ -165,6 +165,47 @@ else
   echo "zoxide already installed."
 fi
 
+# --- Lazygit --------------------------------------------------------------
+
+# Git icin terminal UI.
+if ! command -v lazygit >/dev/null 2>&1; then
+  echo "Installing Lazygit..."
+
+  version="$(
+    curl -fsSL https://api.github.com/repos/jesseduffield/lazygit/releases/latest |
+      sed -n 's/.*"tag_name":[[:space:]]*"v\([^"]*\)".*/\1/p' |
+      head -n 1
+  )"
+
+  case "$(uname -m)" in
+    arm64)
+      lazygit_arch="arm64"
+      ;;
+    x86_64)
+      lazygit_arch="x86_64"
+      ;;
+    *)
+      echo "Unsupported architecture for Lazygit: $(uname -m)"
+      exit 1
+      ;;
+  esac
+
+  tmp="$(mktemp -d)"
+
+  curl -fL \
+    "https://github.com/jesseduffield/lazygit/releases/download/v${version}/lazygit_${version}_darwin_${lazygit_arch}.tar.gz" \
+    -o "$tmp/lazygit.tar.gz"
+
+  tar -xzf "$tmp/lazygit.tar.gz" -C "$tmp"
+
+  cp "$tmp/lazygit" "$BIN_DIR/lazygit"
+  chmod 755 "$BIN_DIR/lazygit"
+
+  rm -rf "$tmp"
+else
+  echo "Lazygit already installed."
+fi
+
 
 # --- GitHub binary installer ----------------------------------------------
 

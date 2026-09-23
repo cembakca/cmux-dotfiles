@@ -35,3 +35,6 @@ netrc
 .zsh/
 .fzf/
 .oh-my-zsh/
+
+# graft's local graph cache — regenerable, not committed (run `graft build`).
+/graft/

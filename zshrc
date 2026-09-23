@@ -144,3 +144,6 @@ fi
 if [ -f "$HOME/.zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" ]; then
   source "$HOME/.zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
 fi
+# --- Lazygit --------------------------------------------------------------
+# Git islemleri icin terminal UI.
+alias lg="lazygit"
