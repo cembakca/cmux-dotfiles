@@ -23,3 +23,8 @@
 .claude/
 npmrc
 netrc
+
+# External tools/plugins are installed by install.sh.
+.zsh/
+.fzf/
+.oh-my-zsh/
