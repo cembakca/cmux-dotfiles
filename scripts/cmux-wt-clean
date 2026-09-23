@@ -1,0 +1,80 @@
+#!/bin/zsh
+
+set -e
+
+# Bir git reposu icinde oldugumuzu dogrula.
+repo="$(git rev-parse --show-toplevel 2>/dev/null)" || {
+  echo "Bir git reposu icinde degilsin."
+  exit 1
+}
+
+current_dir="$(pwd -P)"
+
+# Ana checkout disindaki worktree'leri fzf ile sec.
+target="$(
+  git -C "$repo" worktree list --porcelain |
+    awk '/^worktree / { sub(/^worktree /, ""); print }' |
+    grep -Fvx "$repo" |
+    fzf \
+      --prompt="Worktree sil > " \
+      --height=40% \
+      --reverse
+)"
+
+# Secim yapilmadiysa sessizce cik.
+[ -z "$target" ] && exit 0
+
+# Icinde bulundugumuz worktree'yi yanlislikla silme.
+case "$current_dir" in
+  "$target"|"$target"/*)
+    echo "Su an bu worktree'nin icindesin. Once baska bir checkout'a gec."
+    exit 1
+    ;;
+esac
+
+branch="$(git -C "$target" branch --show-current)"
+
+# Commit edilmemis degisiklik varsa dokunma.
+if [ -n "$(git -C "$target" status --porcelain)" ]; then
+  echo
+  echo "Worktree temiz degil:"
+  git -C "$target" status --short
+  echo
+  echo "Silme iptal edildi."
+  exit 1
+fi
+
+echo
+echo "Worktree : $target"
+echo "Branch   : ${branch:-detached}"
+echo
+
+read "answer?Bu worktree silinsin mi? [y/N] "
+
+case "$answer" in
+  y|Y)
+    ;;
+  *)
+    echo "Iptal edildi."
+    exit 0
+    ;;
+esac
+
+# Worktree'yi kaldir.
+git -C "$repo" worktree remove "$target"
+
+# Branch yalnizca Git'e gore merge edilmisse silinir.
+# Merge edilmemisse -d reddeder ve branch korunur.
+if [ -n "$branch" ]; then
+  if git -C "$repo" branch -d "$branch"; then
+    echo "Branch silindi: $branch"
+  else
+    echo "Branch korunuyor: $branch"
+  fi
+fi
+
+# Artik kullanilmayan worktree metadata'sini temizle.
+git -C "$repo" worktree prune
+
+echo
+echo "Worktree cleanup tamamlandi."

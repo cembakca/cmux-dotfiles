@@ -1,0 +1,42 @@
+#!/bin/zsh
+
+set -e
+
+type="${1:-}"
+
+case "$type" in
+  web|backend|monorepo)
+    ;;
+  *)
+    echo "Kullanim:"
+    echo "  cmux-init web"
+    echo "  cmux-init backend"
+    echo "  cmux-init monorepo"
+    exit 1
+    ;;
+esac
+
+repo="$(git rev-parse --show-toplevel 2>/dev/null)" || {
+  echo "Bir git reposu icinde degilsin."
+  exit 1
+}
+
+target="$repo/.cmux/cmux.json"
+template="$HOME/.config/cmux/templates/$type.jsonc"
+
+if [ -e "$target" ]; then
+  echo "$target zaten var."
+  echo "Uzerine yazilmadi."
+  exit 1
+fi
+
+mkdir -p "$repo/.cmux"
+cp "$template" "$target"
+
+echo "Olusturuldu:"
+echo "  $target"
+echo
+echo "Template:"
+echo "  $type"
+echo
+echo "Project-specific command ve portlari kontrol et."

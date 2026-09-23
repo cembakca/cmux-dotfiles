@@ -1,0 +1,54 @@
+# Prompt tek satir ve minimal kalsin.
+add_newline = false
+
+# Ana prompt sirasi.
+# Hostname sadece SSH'ta gorunur.
+format = "$hostname$directory$git_branch$git_status$cmd_duration$character"
+
+
+[hostname]
+# Local makinede hostname gosterme.
+# Sadece SSH oturumunda gorunsun.
+ssh_only = true
+format = "[$hostname]($style) "
+
+
+[directory]
+# Uzun path'leri kisalt.
+truncation_length = 3
+truncate_to_repo = true
+
+
+[git_branch]
+# Aktif Git branch.
+format = "[$branch]($style) "
+
+
+[git_status]
+# Git durumunu kompakt goster.
+format = "[$all_status$ahead_behind]($style) "
+
+# Git status sembolleri.
+conflicted = "!"
+ahead = "⇡${count}"
+behind = "⇣${count}"
+diverged = "⇕⇡${ahead_count}⇣${behind_count}"
+up_to_date = ""
+untracked = "?${count}"
+stashed = "*${count}"
+modified = "~${count}"
+staged = "+${count}"
+renamed = "»${count}"
+deleted = "✘${count}"
+
+
+[cmd_duration]
+# Yalnizca 1.5 saniyeden uzun komutlarda sure goster.
+min_time = 1500
+format = "[$duration]($style) "
+
+
+[character]
+# Minimal prompt karakteri.
+success_symbol = "[❯](bold)"
+error_symbol = "[❯](bold)"

@@ -1,0 +1,279 @@
+{
+  "$schema": "https://raw.githubusercontent.com/manaflow-ai/cmux/b685a27/web/data/cmux.schema.json",
+  "schemaVersion": 1,
+  "workspaceGroups": {
+    "newWorkspacePlacement": "afterCurrent"
+  },
+  "automation": {
+    // Claude Code'u cmux wrapper'i üzerinden izler.
+    // Agent durumu, permission bekleme ve session bilgilerini cmux'e aktarir.
+    "claudeCodeIntegration": true,
+    // Claude'un kendi actigi subagent'lar icin ayri ayri notification gondermez.
+    // Multi-agent kullaniminda notification kalabaligini azaltir.
+    "suppressSubagentNotifications": true,
+    // Claude/Codex konusuna gore workspace'e kisa isim versin.
+    // Ornek: "Fix checkout validation", "Review auth flow"
+    "workspaceAutoNaming": true,
+    // Her agent kendi session'ini isimlendirsin.
+    "autoNamingAgent": "auto",
+    // Socket erisimini genisletmiyoruz.
+    // Yalniz cmux icindeki otomasyonlar kullanabilsin.
+    "socketControlMode": "cmuxOnly"
+  },
+  "notifications": {
+    // Dock ikonunda unread sayisi goster.
+    "dockBadge": true,
+    // Menu bar'i gereksiz kalabaliklastirma.
+    "showInMenuBar": false,
+    // Bekleyen bildirim olan pane'i hafifce belirt.
+    "unreadPaneRing": true,
+    // Ani flash dikkat dagitiyor; kapali tut.
+    "paneFlash": false,
+    // Ayni workspace'teki baska pane'in bildirimi,
+    // o pane'e gercekten gecene kadar kaybolmasin.
+    "suppressOnlyFocusedSurface": true,
+    // Claude permission beklerse mutlaka bildir.
+    "agentPermissionPrompt": true,
+    // Her ara turda degil, gercekten idle oldugunda bildir.
+    "agentTurnComplete": "whenIdle",
+    // Uzun sure input bekleyen agent'i hatirlat.
+    "agentIdleReminder": true,
+    // Sessiz kullanim.
+    "sound": "none"
+  },
+  "app": {
+    "appearance": "dark",
+    "minimalMode": true,
+    "hideTabCloseButton": true
+  },
+  "terminal": {
+    // Terminal scrollbar'i gizli tut.
+    "showScrollBar": false,
+    // cmux yeniden acildiginda desteklenen agent session'larini
+    // kayitli session ID uzerinden otomatik resume et.
+    "autoResumeAgentSessions": true
+  },
+  "sidebar": {
+    "wrapWorkspaceTitles": false,
+    "showWorkspaceDescription": false,
+    "showNotificationMessage": false,
+    // Workspace'in hangi klasorde calistigini goster.
+    // Worktree kullandigimizda ana repo ile feature checkout'u ayirmayi kolaylastirir.
+    "showBranchDirectory": true,
+    // Branch ile iliskili PR metadata'sini sidebar'da goster.
+    "showPullRequests": true,
+    // Repo degisikliklerini polling yerine filesystem uzerinden takip et.
+    // Branch / PR bilgisinin daha hizli guncellenmesini saglar.
+    "watchGitStatus": true,
+    // PR bilgisini tiklanabilir yap.
+    "makePullRequestsClickable": true,
+    // PR linklerini dis browser yerine cmux browser'da ac.
+    "openPullRequestLinksInCmuxBrowser": true,
+    "showSSH": false,
+    "showPorts": false,
+    "showLog": false,
+    "showProgress": true,
+    "showAgentActivity": true,
+    "showCustomMetadata": false,
+    "loadingSpinnerPosition": "trailing",
+    "notificationBadgePosition": "trailing",
+    // Git bilgisini tek satirda tutup sidebar'i kompakt birak.
+    "branchLayout": "inline"
+  },
+  "sidebarAppearance": {
+    "matchTerminalBackground": true
+  },
+  "commands": [
+    {
+      "name": "Dev Workspace",
+      "description": "Main terminal with server and shell panes",
+      "keywords": [
+        "dev",
+        "workspace",
+        "layout"
+      ],
+      "workspace": {
+        "name": "Dev",
+        "cwd": ".",
+        "layout": {
+          "direction": "horizontal",
+          "split": 0.65,
+          "children": [
+            {
+              "pane": {
+                "surfaces": [
+                  {
+                    "type": "terminal",
+                    "name": "Main",
+                    "focus": true
+                  }
+                ]
+              }
+            },
+            {
+              "direction": "vertical",
+              "split": 0.55,
+              "children": [
+                {
+                  "pane": {
+                    "surfaces": [
+                      {
+                        "type": "terminal",
+                        "name": "Server"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "pane": {
+                    "surfaces": [
+                      {
+                        "type": "terminal",
+                        "name": "Shell"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Terminal + Browser",
+      "description": "Development workspace with terminal and browser",
+      "keywords": [
+        "browser",
+        "web",
+        "frontend",
+        "dev"
+      ],
+      "workspace": {
+        "name": "Web",
+        "cwd": ".",
+        "layout": {
+          "direction": "horizontal",
+          // Kod/Claude tarafi biraz daha genis kalsin.
+          "split": 0.58,
+          "children": [
+            {
+              "pane": {
+                "surfaces": [
+                  {
+                    "type": "terminal",
+                    "name": "Dev",
+                    // Workspace acilinca klavye terminalde olsun.
+                    "focus": true
+                  }
+                ]
+              }
+            },
+            {
+              "pane": {
+                "surfaces": [
+                  {
+                    "type": "browser",
+                    "name": "Preview",
+                    // Simdilik ortak dev-server adresimiz.
+                    // Project launcher adiminda bunu proje bazli hale getirecegiz.
+                    "url": "http://localhost:3000"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Claude Team",
+      "description": "Start Claude Code with native cmux teammate panes",
+      "keywords": [
+        "claude",
+        "team",
+        "agents",
+        "multi-agent"
+      ],
+      "workspace": {
+        // Team lead icin ayri bir workspace olustur.
+        // Teammate'ler Claude tarafindan daha sonra split olarak eklenecek.
+        "name": "Claude Team",
+        // Command Palette'i hangi klasorden actiysan orayi koru.
+        "cwd": ".",
+        "layout": {
+          "pane": {
+            "surfaces": [
+              {
+                "type": "terminal",
+                "name": "Claude Lead",
+                // Normal `claude` yerine cmux'un Teams launcher'ini kullan.
+                // Bu launcher teammate pane'lerini cmux split'lerine cevirir.
+                "command": "cmux claude-teams",
+                // Workspace acilinca lead terminal aktif olsun.
+                "focus": true
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "name": "Isolated Claude Worktree",
+      "description": "Create a fresh git worktree and start Claude inside it",
+      "keywords": [
+        "git",
+        "worktree",
+        "claude",
+        "isolated",
+        "branch"
+      ],
+      "workspace": {
+        "name": "Worktree",
+        "cwd": ".",
+        "layout": {
+          "direction": "horizontal",
+          "split": 0.68,
+          "children": [
+            {
+              "pane": {
+                "surfaces": [
+                  {
+                    "type": "terminal",
+                    "name": "Claude",
+                    // Once worktree hazir olana kadar bekle.
+                    // Sonra Claude'u yeni checkout icinde baslat.
+                    "command": "state=\"${TMPDIR:-/tmp}/cmux-worktree-${CMUX_WORKSPACE_ID:-manual}.dir\"; echo 'Preparing worktree...'; while [ ! -s \"$state\" ]; do sleep 0.2; done; dir=$(cat \"$state\"); cd \"$dir\"; exec claude",
+                    "focus": true
+                  }
+                ]
+              }
+            },
+            {
+              "pane": {
+                "surfaces": [
+                  {
+                    "type": "terminal",
+                    "name": "Worktree Shell",
+                    // Repo root'u bul.
+                    // Ana repo'nun yaninda worktrees/ klasoru olustur.
+                    // Timestamp ile yeni branch + worktree yarat.
+                    "command": "set -e; state=\"${TMPDIR:-/tmp}/cmux-worktree-${CMUX_WORKSPACE_ID:-manual}.dir\"; rm -f \"$state\"; repo=$(git rev-parse --show-toplevel); parent=$(dirname \"$repo\"); mkdir -p \"$parent/worktrees\"; slug=\"cmux-$(date +%Y%m%d-%H%M%S)\"; dir=\"$parent/worktrees/$slug\"; git -C \"$repo\" worktree add -b \"$slug\" \"$dir\"; printf '%s\\n' \"$dir\" > \"$state\"; cd \"$dir\"; exec \"${SHELL:-/bin/zsh}\" -l"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "shortcuts": {
+    "bindings": {
+      "focusLeft": "opt+cmd+h",
+      "focusDown": "opt+cmd+j",
+      "focusUp": "opt+cmd+k",
+      "focusRight": "opt+cmd+l"
+    }
+  }
+}

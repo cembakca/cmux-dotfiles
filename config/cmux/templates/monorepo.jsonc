@@ -1,0 +1,86 @@
+{
+    "$schema": "https://raw.githubusercontent.com/manaflow-ai/cmux/ddd4a01bc/web/data/cmux.schema.json",
+    "schemaVersion": 1,
+  
+    "commands": [
+      {
+        "name": "Project Dev",
+        "description": "Claude + app server + secondary shell + browser",
+        "keywords": ["dev", "monorepo", "claude"],
+  
+        "workspace": {
+          "name": "Dev",
+          "cwd": ".",
+  
+          "layout": {
+            "direction": "horizontal",
+            "split": 0.60,
+  
+            "children": [
+              {
+                "pane": {
+                  "surfaces": [
+                    {
+                      "type": "terminal",
+                      "name": "Claude",
+                      "command": "claude",
+                      "focus": true
+                    }
+                  ]
+                }
+              },
+  
+              {
+                "direction": "vertical",
+                "split": 0.50,
+  
+                "children": [
+                  {
+                    "pane": {
+                      "surfaces": [
+                        {
+                          "type": "terminal",
+                          "name": "Server",
+                          "command": "yarn dev"
+                        }
+                      ]
+                    }
+                  },
+  
+                  {
+                    "direction": "vertical",
+                    "split": 0.68,
+  
+                    "children": [
+                      {
+                        "pane": {
+                          "surfaces": [
+                            {
+                              "type": "browser",
+                              "name": "Preview",
+                              "url": "http://localhost:3000"
+                            }
+                          ]
+                        }
+                      },
+  
+                      {
+                        "pane": {
+                          "surfaces": [
+                            {
+                              "type": "terminal",
+                              "name": "Shell"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    ]
+  }

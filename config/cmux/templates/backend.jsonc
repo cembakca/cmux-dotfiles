@@ -1,0 +1,69 @@
+{
+    "$schema": "https://raw.githubusercontent.com/manaflow-ai/cmux/ddd4a01bc/web/data/cmux.schema.json",
+    "schemaVersion": 1,
+  
+    "commands": [
+      {
+        "name": "Project Dev",
+        "description": "Claude + backend server + shell",
+        "keywords": ["dev", "backend", "claude"],
+  
+        "workspace": {
+          "name": "Dev",
+          "cwd": ".",
+  
+          "layout": {
+            "direction": "horizontal",
+            "split": 0.65,
+  
+            "children": [
+              {
+                "pane": {
+                  "surfaces": [
+                    {
+                      "type": "terminal",
+                      "name": "Claude",
+                      "command": "claude",
+                      "focus": true
+                    }
+                  ]
+                }
+              },
+  
+              {
+                "direction": "vertical",
+                "split": 0.55,
+  
+                "children": [
+                  {
+                    "pane": {
+                      "surfaces": [
+                        {
+                          "type": "terminal",
+                          "name": "Server",
+  
+                          // Repo'nun gercek backend start komutuyla degistir.
+                          "command": "echo 'Configure backend start command in .cmux/cmux.json'"
+                        }
+                      ]
+                    }
+                  },
+  
+                  {
+                    "pane": {
+                      "surfaces": [
+                        {
+                          "type": "terminal",
+                          "name": "Shell"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    ]
+  }

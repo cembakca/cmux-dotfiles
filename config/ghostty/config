@@ -1,0 +1,19 @@
+theme = Catppuccin Mocha
+
+font-family = JetBrains Mono
+font-size = 14
+
+cursor-style = bar
+cursor-style-blink = false
+
+window-padding-x = 8
+window-padding-y = 6
+window-padding-balance = true
+
+background-opacity = 1
+
+split-divider-color = #313244
+
+scrollback-limit = 50000000
+unfocused-split-opacity = 0.68
+unfocused-split-fill = #181825

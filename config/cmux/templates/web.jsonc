@@ -1,0 +1,99 @@
+{
+    "$schema": "https://raw.githubusercontent.com/manaflow-ai/cmux/ddd4a01bc/web/data/cmux.schema.json",
+    "schemaVersion": 1,
+  
+    "commands": [
+      {
+        "name": "Project Dev",
+        "description": "Claude + dev server + browser + shell",
+        "keywords": ["dev", "web", "claude", "browser"],
+  
+        "workspace": {
+          "name": "Dev",
+          "cwd": ".",
+  
+          "layout": {
+            "direction": "horizontal",
+            "split": 0.62,
+  
+            "children": [
+              {
+                "pane": {
+                  "surfaces": [
+                    {
+                      "type": "terminal",
+                      "name": "Claude",
+                      "command": "claude",
+                      "focus": true
+                    }
+                  ]
+                }
+              },
+  
+              {
+                "direction": "vertical",
+                "split": 0.45,
+  
+                "children": [
+                  {
+                    "pane": {
+                      "surfaces": [
+                        {
+                          "type": "terminal",
+                          "name": "Server",
+  
+                          // Projenin package manager'ina gore gerekirse degistir.
+                          "command": "yarn dev"
+                        }
+                      ]
+                    }
+                  },
+  
+                  {
+                    "direction": "vertical",
+                    "split": 0.70,
+  
+                    "children": [
+                      {
+                        "pane": {
+                          "surfaces": [
+                            {
+                              "type": "browser",
+                              "name": "Preview",
+  
+                              // Projenin dev portuna gore degistir.
+                              "url": "http://localhost:3000"
+                            }
+                          ]
+                        }
+                      },
+  
+                      {
+                        "pane": {
+                          "surfaces": [
+                            {
+                              "type": "terminal",
+                              "name": "Shell"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+  
+      {
+        "name": "Run Tests",
+        "description": "Run the project's test suite",
+        "keywords": ["test"],
+  
+        // Repo bazinda gerekirse degistir.
+        "command": "yarn test"
+      }
+    ]
+  }

@@ -1,0 +1,25 @@
+# OS
+.DS_Store
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+
+# Secrets / credentials
+*.env
+.env
+.env.*
+*.key
+*.pem
+*.p12
+*.pfx
+*.crt
+
+# Never copy these into dotfiles
+.ssh/
+.aws/
+.gnupg/
+.claude/
+npmrc
+netrc
