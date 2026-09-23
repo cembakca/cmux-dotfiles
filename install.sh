@@ -17,7 +17,7 @@ echo
 # PREREQUISITES
 # =============================================================================
 
-# Bu script sistem package manager kullanmaz.
+# Sistem package manager kullanmiyoruz.
 # Ancak macOS'ta git ve curl mevcut olmali.
 for cmd in git curl; do
   if ! command -v "$cmd" >/dev/null 2>&1; then
@@ -51,13 +51,13 @@ export PATH="$BIN_DIR:$PATH"
 # .zshrc Oh My Zsh kullaniyor.
 #
 # RUNZSH=no:
-# Installer bittikten sonra otomatik yeni shell acma.
+# Installer bittikten sonra otomatik shell acma.
 #
 # CHSH=no:
 # Sirket makinesinde login shell'i degistirmeye calisma.
 #
 # KEEP_ZSHRC=yes:
-# Bizim version-controlled .zshrc dosyamizi koru.
+# Version-controlled .zshrc dosyamizi koru.
 if [ ! -d "$HOME/.oh-my-zsh" ]; then
   echo "Installing Oh My Zsh..."
 
@@ -154,9 +154,7 @@ fi
 
 # --- zoxide ---------------------------------------------------------------
 
-# Akilli directory navigation:
-#   z velox
-#   z cortex
+# Akilli directory navigation.
 if ! command -v zoxide >/dev/null 2>&1; then
   echo "Installing zoxide..."
 
@@ -170,7 +168,7 @@ fi
 
 # --- GitHub binary installer ----------------------------------------------
 
-# GitHub'un latest release'indeki macOS binary paketlerinden
+# GitHub latest release'indeki macOS binary paketlerinden
 # CLI araclarini ~/.local/bin altina kurar.
 install_github_binary() {
   repo="$1"
@@ -306,13 +304,30 @@ chmod 755 "$BIN_DIR/cmux-wt-clean"
 chmod 755 "$BIN_DIR/cmux-health"
 chmod 755 "$BIN_DIR/cmux-secrets-check"
 
-# --- Dotfiles Git hook ----------------------------------------------------
 
-# Dotfiles repo'sunda her commit'ten once secret scan calissin.
+# =============================================================================
+# GIT SECURITY HOOK
+# =============================================================================
+
+# Dotfiles repo'sunda her commit'ten once secret scanner calissin.
+#
+# Hook'un kendisi repo icinde version-controlled:
+#   ~/.dotfiles/hooks/pre-commit
+#
+# Git'in kullandigi yere symlink olusturuyoruz:
+#   ~/.dotfiles/.git/hooks/pre-commit
 if [ -d "$DOTFILES/.git" ]; then
-  ln -sf \
-    "$DOTFILES/hooks/pre-commit" \
-    "$DOTFILES/.git/hooks/pre-commit"
+  if [ -f "$DOTFILES/hooks/pre-commit" ]; then
+    chmod 755 "$DOTFILES/hooks/pre-commit"
+
+    ln -sf \
+      "$DOTFILES/hooks/pre-commit" \
+      "$DOTFILES/.git/hooks/pre-commit"
+
+    echo "Dotfiles pre-commit security hook installed."
+  else
+    echo "WARNING: $DOTFILES/hooks/pre-commit not found."
+  fi
 fi
 
 
@@ -325,7 +340,21 @@ echo "Checking installed tools..."
 echo
 
 for cmd in git fzf rg fd bat starship zoxide; do
-  printf "%-12s " "$cmd"
+  printf "%-20s " "$cmd"
+
+  if command -v "$cmd" >/dev/null 2>&1; then
+    echo "OK"
+  else
+    echo "MISSING"
+  fi
+done
+
+echo
+echo "Checking helper scripts..."
+echo
+
+for cmd in cmux-init cmux-wt-clean cmux-health cmux-secrets-check; do
+  printf "%-20s " "$cmd"
 
   if command -v "$cmd" >/dev/null 2>&1; then
     echo "OK"
