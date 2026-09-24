@@ -189,3 +189,14 @@ function y() {
 # --- Default terminal editor ----------------------------------------------
 export EDITOR="micro"
 export VISUAL="micro"
+
+
+# =============================================================================
+# CMUX MARKDOWN TOOLKIT
+# =============================================================================
+
+alias mdp="cmux-md preview"
+alias mdr="cmux-md review"
+alias mdb="cmux-md both"
+
+export PATH=$PATH:$(go env GOPATH)/bin

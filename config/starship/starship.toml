@@ -3,8 +3,7 @@ add_newline = false
 
 # Ana prompt sirasi.
 # Hostname sadece SSH'ta gorunur.
-format = "$hostname$directory$git_branch$git_status$cmd_duration$character"
-
+format = "$hostname$directory$git_branch$git_status$python$cmd_duration$character"
 
 [hostname]
 # Local makinede hostname gosterme.

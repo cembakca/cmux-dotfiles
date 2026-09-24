@@ -3,7 +3,7 @@
   "truecolor": "on",
 
   "syntax": true,
-  "cursorline": true,
+  "cursorline": false,
   "diffgutter": true,
 
   "tabsize": 2,

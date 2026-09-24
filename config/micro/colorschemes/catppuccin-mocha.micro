@@ -35,10 +35,9 @@ color-link statusline.suggestions "#cdd6f4,#45475a"
 color-link tabbar "#6c7086,#181825"
 color-link tabbar.active "bold #cba6f7,#313244"
 
-color-link line-number "#585b70,#1e1e2e"
-color-link current-line-number "bold #cba6f7,#1e1e2e"
-
-color-link cursor-line ",#181825"
+color-link line-number "#6c7086,#1e1e2e"
+color-link current-line-number "bold #cba6f7,#313244"
+color-link cursor-line ",#313244"
 
 color-link gutter-info "#89b4fa,#1e1e2e"
 color-link gutter-warning "#f9e2af,#1e1e2e"
